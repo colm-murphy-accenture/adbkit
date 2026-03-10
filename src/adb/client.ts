@@ -48,7 +48,10 @@ export default class Client extends EventEmitter {
   }
 
   public version(): Bluebird<number> {
-    return this.connection().then((conn) => new HostVersionCommand(conn).execute());
+    return this.connection().then((conn) =>
+      new HostVersionCommand(conn).execute()
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   public connect(host: string, port = 5555): Bluebird<string> {
@@ -60,7 +63,10 @@ export default class Client extends EventEmitter {
         port = parsed;
       }
     }
-    return this.connection().then((conn) => new HostConnectCommand(conn).execute(host, port));
+    return this.connection().then((conn) =>
+      new HostConnectCommand(conn).execute(host, port)
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   public disconnect(host: string, port = 5555): Bluebird<DeviceClient> {
@@ -72,17 +78,24 @@ export default class Client extends EventEmitter {
         port = parsed;
       }
     }
-    return this.connection()
-      .then((conn) => new HostDisconnectCommand(conn).execute(host, port))
-      .then((deviceId) => new DeviceClient(this, deviceId));
+    return this.connection().then((conn) =>
+      new HostDisconnectCommand(conn).execute(host, port)
+        .finally(() => conn.socket.destroy()),
+    ).then((deviceId) => new DeviceClient(this, deviceId));
   }
 
   public listDevices(): Bluebird<Device[]> {
-    return this.connection().then((conn) => new HostDevicesCommand(conn).execute());
+    return this.connection().then((conn) =>
+      new HostDevicesCommand(conn).execute()
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   public listDevicesWithPaths(): Bluebird<DeviceWithPath[]> {
-    return this.connection().then((conn) => new HostDevicesWithPathsCommand(conn).execute());
+    return this.connection().then((conn) =>
+      new HostDevicesWithPathsCommand(conn).execute()
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   public trackDevices(): Bluebird<Tracker> {
@@ -90,7 +103,10 @@ export default class Client extends EventEmitter {
   }
 
   public kill(): Bluebird<boolean> {
-    return this.connection().then((conn) => new HostKillCommand(conn).execute());
+    return this.connection().then((conn) =>
+      new HostKillCommand(conn).execute()
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   public getDevice(serial: string): DeviceClient {

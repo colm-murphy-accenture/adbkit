@@ -13,6 +13,10 @@
   "bin": {
     "adbkit": "./bin/adbkit"
   },
+  "files": [
+    "dist",
+    "bin"
+  ],
   "bugs": {
     "url": "https://github.com/devicefarmer/adbkit/issues"
   },
@@ -38,6 +42,7 @@
   "scripts": {
     "clean": "rimraf dist index.d.ts index.js",
     "keycode": "node tasks/keycode.js",
+    "prepare": "npm run clean && npm run compile",
     "prepublish": "npm run clean && npm run compile && npm run test",
     "compile": "tsc  -p .",
     "compile2": "tsc -p tsconfig-dist.json",
