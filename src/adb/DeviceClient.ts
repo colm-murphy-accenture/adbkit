@@ -79,7 +79,10 @@ export default class DeviceClient {
    * @returns The serial number of the device.
    */
   public getSerialNo(): Bluebird<string> {
-    return this.connection().then((conn) => new GetSerialNoCommand(conn).execute(this.serial));
+    return this.connection().then((conn) =>
+      new GetSerialNoCommand(conn).execute(this.serial)
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   /**
@@ -87,7 +90,10 @@ export default class DeviceClient {
    * @returns The device path. This corresponds to the device path in `client.listDevicesWithPaths()`.
    */
   public getDevicePath(): Bluebird<DeviceWithPath['path']> {
-    return this.connection().then((conn) => new GetDevicePathCommand(conn).execute(this.serial));
+    return this.connection().then((conn) =>
+      new GetDevicePathCommand(conn).execute(this.serial)
+        .finally(() => conn.socket.destroy()),
+    );
   }
   /**
    * Gets the state of the device identified by the given serial number.
@@ -95,7 +101,10 @@ export default class DeviceClient {
    * @returns The device state. This corresponds to the device type in `client.listDevices()`.
    */
   public getState(): Bluebird<string> {
-    return this.connection().then((conn) => new GetStateCommand(conn).execute(this.serial));
+    return this.connection().then((conn) =>
+      new GetStateCommand(conn).execute(this.serial)
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   /**
@@ -164,7 +173,10 @@ export default class DeviceClient {
    * @returns true
    */
   public forward(local: string, remote: string): Bluebird<boolean> {
-    return this.connection().then((conn) => new ForwardCommand(conn).execute(this.serial, local, remote));
+    return this.connection().then((conn) =>
+      new ForwardCommand(conn).execute(this.serial, local, remote)
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   /**
@@ -176,7 +188,10 @@ export default class DeviceClient {
    *   -   **remote** The remote endpoint on the device. Same format as `client.forward()`'s `remote` argument.
    */
   public listForwards(): Bluebird<Forward[]> {
-    return this.connection().then((conn) => new ListForwardsCommand(conn).execute(this.serial));
+    return this.connection().then((conn) =>
+      new ListForwardsCommand(conn).execute(this.serial)
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   /**
@@ -213,7 +228,14 @@ export default class DeviceClient {
    * return a new connextion to the current Host devices
    */
   public transport(): Bluebird<Connection> {
-    return this.connection().then((conn) => new HostTransportCommand(conn).execute(this.serial).return(conn));
+    return this.connection().then((conn) =>
+      new HostTransportCommand(conn).execute(this.serial)
+        .return(conn)
+        .catch((err) => {
+          conn.socket.destroy();
+          throw err;
+        }),
+    );
   }
 
   /**
@@ -603,7 +625,10 @@ export default class DeviceClient {
    * @returns The device ID. Can be useful for chaining.
    */
   public waitForDevice(): Bluebird<string> {
-    return this.connection().then((conn) => new WaitForDeviceCommand(conn).execute(this.serial));
+    return this.connection().then((conn) =>
+      new WaitForDeviceCommand(conn).execute(this.serial)
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   /**
@@ -612,7 +637,10 @@ export default class DeviceClient {
    * @returns true
    */
   public attach(): Bluebird<boolean> {
-    return this.connection().then((conn) => new AttachCommand(conn).execute(this.serial));
+    return this.connection().then((conn) =>
+      new AttachCommand(conn).execute(this.serial)
+        .finally(() => conn.socket.destroy()),
+    );
   }
 
   /**
@@ -621,6 +649,9 @@ export default class DeviceClient {
    * @returns true
    */
   public detach(): Bluebird<boolean> {
-    return this.connection().then((conn) => new DetachCommand(conn).execute(this.serial));
+    return this.connection().then((conn) =>
+      new DetachCommand(conn).execute(this.serial)
+        .finally(() => conn.socket.destroy()),
+    );
   }
 }
